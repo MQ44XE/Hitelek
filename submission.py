@@ -8,8 +8,8 @@ df2 = pd.read_csv("AGG.csv", index_col=0)
 df2.columns = [colname+"_AGG" for colname in df2.columns]
 
 #adding returns to dataframe
-df1["Daily_return_SPY"] = df1["Adj Close_SPY"] / df1["Adj Close_SPY"].shift(1) - 1
-df2["Daily_return_AGG"] = df2["Adj Close_AGG"] / df2["Adj Close_AGG"].shift(1) - 1
+df1["Daily_return_SPY"] = np.log(df1["Adj Close_SPY"] / df1["Adj Close_SPY"].shift(1))
+df2["Daily_return_AGG"] = np.log(df2["Adj Close_AGG"] / df2["Adj Close_AGG"].shift(1))
 
 #gathering returns into one dataframe
 only_returns = pd.DataFrame()
