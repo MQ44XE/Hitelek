@@ -18,7 +18,8 @@ df2["Daily_return_AGG"] = np.log(df2["Adj Close_AGG"] / df2["Adj Close_AGG"].shi
 #gathering returns into one dataframe
 only_returns = pd.DataFrame()
 only_returns["SPY"]=df1["Daily_return_SPY"]
-only_returns["AGG"]=df2["Daily_return_AGG"]
+#only_returns["AGG"]=df2["Daily_return_AGG"]
+only_returns = only_returns.dropna()
 
 def read_etf_file(etf):
     filename = os.path.join(etf + '.csv')
@@ -234,8 +235,34 @@ historical_var["SPY_0.3-AGG_0.7"] = calc2_historical_var()
 historical_var["SPY_0.5-AGG_0.5"] = calc3_historical_var()
 historical_var["SPY_0.7-AGG_0.3"] = calc4_historical_var()
 historical_var["SPY_0.9-AGG_0.1"] = calc5_historical_var()
-print(historical_var)
-print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
-print(calculate_historical_var(df_portfolio_returns,0.99))
-print(calc1_historical_var())
+
+# print(historical_var)
+# print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
+# print(calculate_historical_var(df_portfolio_returns,0.99))
+# print(calc1_historical_var())
+
+# Exercise 3
+def calculate_ewma_variance(df_etf_returns, decay_factor, window):
+    squared_returns = df_etf_returns ** 2
+    ewma_var = squared_returns.ewm(alpha=1-decay_factor, min_periods=window, adjust=True).mean()
+    return ewma_var
+
+# Calculate EWMA variance with decay factor 0.94 and window of 100 days
+ewma_var_1 = calculate_ewma_variance(only_returns, 0.94, 100)
+
+# Calculate EWMA variance with decay factor 0.97 and window of 100 days
+ewma_var_2 = calculate_ewma_variance(only_returns, 0.97, 100)
+
+# Plot the EWMA variances
+plt.figure(figsize=(12, 6))
+plt.plot(ewma_var_1, label='EWMA Variance (Decay 0.94)')
+plt.plot(ewma_var_2, label='EWMA Variance (Decay 0.97)')
+plt.xlabel('Date')
+plt.ylabel('Variance')
+plt.title('EWMA Variance of ETF Returns')
+plt.legend()
+plt.show()
+print(ewma_var_1)
+print(ewma_var_2)
+
 
