@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import os
+import sys
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import norm
+import math
 
 #5-year historical data
 df1 = pd.read_csv("SPY.csv", index_col=0)
@@ -45,6 +47,7 @@ def get_etf_returns(etf_name,
     # rename column
     df.columns = [etf_name]
     # df = df.rename(by=col, {'return': etf_name})
+    df.dropna(inplace=True)
     return df
 
 
@@ -240,6 +243,59 @@ historical_var["SPY_0.9-AGG_0.1"] = calc5_historical_var()
 # print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
 # print(calculate_historical_var(df_portfolio_returns,0.99))
 # print(calc1_historical_var())
+
+#Exercise 2
+def calculate_historical_volatility(df_returns, annualized=False):
+    volatility = np.std(df_returns)
+    if annualized == True:
+        volatility = volatility * np.sqrt(252)  #252 napos kereskedéssel számolva egy évben
+    return volatility
+
+def potential_future_price_path(df_returns, volatility, length, simulations=1):
+    mean = np.mean(df_returns)
+    future_returns = np.random.normal(mean, volatility, (length, simulations))
+    return future_returns
+
+d_weights = {'SPY': 0.1, 'AGG': 0.9}
+def risk_adjusted_weights(etf_names):
+    volatilities = []
+    for etf in etf_names:
+        volatilities.append(calculate_historical_volatility(get_etf_returns(etf)))
+    weights = []
+    base = np.sum(volatilities)
+    for vol in volatilities:
+        weights.append(1-vol/base)
+    return weights
+
+def simulated_returns(expected_return, volatility, correlation, numOfSim):
+    cov = np.array([[volatility[0] ** 2, correlation * volatility[0] * volatility[1]],
+                           [correlation * volatility[0] * volatility[1], volatility[1] ** 2]])
+    future_returns = np.random.multivariate_normal(expected_return, cov, numOfSim).T
+    weights = risk_adjusted_weights(["SPY", "AGG"])
+    portfolio_returns = future_returns[0]*float(weights[0]) + future_returns[1]*float(weights[1])
+    return portfolio_returns
+
+etf = ["SPY","AGG"]
+expected_return = []
+volatility = []
+for x in etf:
+    expected_return.append(get_etf_returns(x))
+    volatility.append(calculate_historical_volatility(get_etf_returns(x)))
+expected_return = np.mean(expected_return, axis=1)
+expected_return = [expected_return[0][0], expected_return[1][0]]
+volatility = np.array([volatility[0], volatility[1]])
+volatility = [volatility[0][0], volatility[1][0]]
+
+corr_1 = pd.DataFrame(simulated_returns(expected_return, volatility, 0.8, 10000), columns = ['Portfolio corr=0.8'])
+corr_2 = pd.DataFrame(simulated_returns(expected_return, volatility, 0.2, 10000), columns = ['Portfolio corr=0.2'])
+corr_3 = pd.DataFrame(simulated_returns(expected_return, volatility, -0.2, 10000), columns = ['Portfolio corr=-0.2'])
+corr_4 = pd.DataFrame(simulated_returns(expected_return, volatility, -0.8, 10000), columns = ['Portfolio corr=-0.8'])
+
+print(calculate_historical_var(corr_1, 0.95))
+print(calculate_historical_var(corr_2, 0.95))
+print(calculate_historical_var(corr_3, 0.95))
+print(calculate_historical_var(corr_4, 0.95))
+
 
 # Exercise 3
 def calculate_ewma_variance(df_etf_returns, decay_factor, window):
