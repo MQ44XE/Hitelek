@@ -317,8 +317,10 @@ plt.xlabel('Date')
 plt.ylabel('Variance')
 plt.title('EWMA Variance of ETF Returns')
 plt.legend()
+#plt.savefig('ewma_variance_plot.png')
 plt.show()
 print(ewma_var_1)
 print(ewma_var_2)
+
 
 
