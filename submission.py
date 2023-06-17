@@ -85,7 +85,7 @@ def get_joined_returns(d_weights, from_date=None, to_date=None):
     return filtered_df
 
 
-def get_portfolio_return(d_weights):
+def get_portfolio_returns(d_weights):
     l_df = []
     for etf, value in d_weights.items():
         df_temp = get_total_return(etf, return_type='simple')
@@ -99,7 +99,7 @@ def get_portfolio_return(d_weights):
 
 def get_portfolio_return_btw_dates(d_weights,
     from_date=None, to_date=None):
-    df = get_portfolio_return(d_weights)
+    df = get_portfolio_returns(d_weights)
     fromdate = pd.to_datetime(from_date)
     todate = pd.to_datetime(to_date)
     filtered_df = df.loc[fromdate:todate]
@@ -149,12 +149,13 @@ def calc_covar_var(pf_value, d_weights, l_conf_levels,
     df_result_amount = df_result_ret * pf_value
     return df_result_ret, df_result_amount
 
+d_weights = {'SPY': 0.1, 'AGG': 0.9}
+df_portfolio_returns = get_portfolio_returns(d_weights)
 
-def calc_historical_var(d_weights, l_conf_levels):
-    l_quantiles = [1-x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+def calculate_historical_var(df_portfolio_returns, alpha):
+    l_quantiles = 1-alpha
+    df_pf = df_portfolio_returns
     df_result = df_pf.quantile(l_quantiles)
-    df_result.index = l_conf_levels
     return df_result
 
 def calc_var_for_period(vartype,
@@ -162,7 +163,7 @@ def calc_var_for_period(vartype,
     from_date, to_date,
     window_in_days):
     d_var_f = {
-        'hist': calc_historical_var,
+        'hist': calculate_historical_var,
         'simple': calc_simple_var,
         'covar': calc_covar_var
     }
@@ -185,7 +186,7 @@ def calc1_historical_var():
     d_weights = {'SPY': 0.1, 'AGG': 0.9}
     l_conf_levels = [0.95, 0.99]
     l_quantiles = [1 - x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+    df_pf = get_portfolio_returns(d_weights)
     df_result = df_pf.quantile(l_quantiles)
     df_result.index = l_conf_levels
     return df_result
@@ -194,7 +195,7 @@ def calc2_historical_var():
     d_weights = {'SPY': 0.3, 'AGG': 0.7}
     l_conf_levels = [0.95, 0.99]
     l_quantiles = [1 - x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+    df_pf = get_portfolio_returns(d_weights)
     df_result = df_pf.quantile(l_quantiles)
     df_result.index = l_conf_levels
     return df_result
@@ -203,7 +204,7 @@ def calc3_historical_var():
     d_weights = {'SPY': 0.5, 'AGG': 0.5}
     l_conf_levels = [0.95, 0.99]
     l_quantiles = [1 - x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+    df_pf = get_portfolio_returns(d_weights)
     df_result = df_pf.quantile(l_quantiles)
     df_result.index = l_conf_levels
     return df_result
@@ -212,7 +213,7 @@ def calc4_historical_var():
     d_weights = {'SPY': 0.7, 'AGG': 0.3}
     l_conf_levels = [0.95, 0.99]
     l_quantiles = [1 - x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+    df_pf = get_portfolio_returns(d_weights)
     df_result = df_pf.quantile(l_quantiles)
     df_result.index = l_conf_levels
     return df_result
@@ -221,7 +222,7 @@ def calc5_historical_var():
     d_weights = {'SPY': 0.9, 'AGG': 0.1}
     l_conf_levels = [0.95, 0.99]
     l_quantiles = [1 - x for x in l_conf_levels]
-    df_pf = get_portfolio_return(d_weights)
+    df_pf = get_portfolio_returns(d_weights)
     df_result = df_pf.quantile(l_quantiles)
     df_result.index = l_conf_levels
     return df_result
@@ -234,3 +235,7 @@ historical_var["SPY_0.5-AGG_0.5"] = calc3_historical_var()
 historical_var["SPY_0.7-AGG_0.3"] = calc4_historical_var()
 historical_var["SPY_0.9-AGG_0.1"] = calc5_historical_var()
 print(historical_var)
+print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
+print(calculate_historical_var(df_portfolio_returns,0.99))
+print(calc1_historical_var())
+
