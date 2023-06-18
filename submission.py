@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import norm
 import math
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_squared_error
 
 #5-year historical data
 df1 = pd.read_csv("SPY.csv", index_col=0)
@@ -243,7 +247,7 @@ historical_var["SPY_0.9-AGG_0.1"] = calc5_historical_var()
 # print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
 # print(calculate_historical_var(df_portfolio_returns,0.99))
 # print(calc1_historical_var())
-
+"""
 #Exercise 2
 def calculate_historical_volatility(df_returns, annualized=False):
     volatility = np.std(df_returns)
@@ -256,7 +260,6 @@ def potential_future_price_path(df_returns, volatility, length, simulations=1):
     future_returns = np.random.normal(mean, volatility, (length, simulations))
     return future_returns
 
-d_weights = {'SPY': 0.1, 'AGG': 0.9}
 def risk_adjusted_weights(etf_names):
     volatilities = []
     for etf in etf_names:
@@ -296,7 +299,6 @@ print(calculate_historical_var(corr_2, 0.95))
 print(calculate_historical_var(corr_3, 0.95))
 print(calculate_historical_var(corr_4, 0.95))
 
-
 # Exercise 3
 def calculate_ewma_variance(df_etf_returns, decay_factor, window):
     squared_returns = df_etf_returns ** 2
@@ -321,6 +323,36 @@ plt.legend()
 plt.show()
 print(ewma_var_1)
 print(ewma_var_2)
+"""
+#Exercise 4
 
+returns = get_etf_returns("SPY")
+squared_returns = returns ** 2
 
+def lagging_data(data, lags):
+    lagged_data = pd.DataFrame()
+    for i in range(1, lags + 1):
+        lagged_data[f'squared_returns_lag_{i}'] = data.shift(i)
+    lagged_data = lagged_data.dropna()
+    return lagged_data
 
+lagged_data = lagging_data(squared_returns, 20)
+
+#Split data
+X = lagged_data.drop('squared_returns_lag_1', axis=1) #features
+y = lagged_data['squared_returns_lag_1'] #target variables
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LinearRegression()
+#cross-validation
+score = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+
+def train_and_evaluate_model(model, X_train, y_train, X_test, y_test):
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    return mse
+
+mse = train_and_evaluate_model(model,X_train,y_train, X_test, y_test)
+print(f"Mean Squared Error (MSE): {mse}")
