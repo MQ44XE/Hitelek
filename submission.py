@@ -247,7 +247,7 @@ historical_var["SPY_0.9-AGG_0.1"] = calc5_historical_var()
 # print(get_portfolio_returns({'SPY': 0.1, 'AGG': 0.9}))
 # print(calculate_historical_var(df_portfolio_returns,0.99))
 # print(calc1_historical_var())
-"""
+
 #Exercise 2
 def calculate_historical_volatility(df_returns, annualized=False):
     volatility = np.std(df_returns)
@@ -323,7 +323,7 @@ plt.legend()
 plt.show()
 print(ewma_var_1)
 print(ewma_var_2)
-"""
+
 #Exercise 4
 
 returns = get_etf_returns("SPY")
@@ -356,3 +356,4 @@ def train_and_evaluate_model(model, X_train, y_train, X_test, y_test):
 
 mse = train_and_evaluate_model(model,X_train,y_train, X_test, y_test)
 print(f"Mean Squared Error (MSE): {mse}")
+print(f"Scores: {score}")
